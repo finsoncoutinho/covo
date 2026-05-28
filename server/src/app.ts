@@ -2,6 +2,9 @@ import express from 'express'
 import cors from 'cors'
 import type { Express } from 'express'
 import prisma from './lib/prisma.js'
+import cookieParser from 'cookie-parser'
+import authRoutes from './routes/auth.routes.js'
+import { errorHandler } from './middlewares/error.middleware.js'
 const app: Express = express()
 
 app.use(
@@ -10,8 +13,11 @@ app.use(
     credentials: true,
   }),
 )
-
+app.use(cookieParser())
 app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
+
+app.use('/api/auth', authRoutes)
 
 app.get('/api/users', async (_req, res) => {
   try {
@@ -33,5 +39,7 @@ app.get('/api/health', (_req, res) => {
     message: 'Covo server is running 🚀',
   })
 })
+
+app.use(errorHandler)
 
 export default app
