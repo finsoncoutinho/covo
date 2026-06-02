@@ -2,12 +2,12 @@ import { api } from '@/lib/api'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import type { LoginInput } from '../schemas/loginSchema'
 
-export const useLogin = () => {
+export const useSignup = () => {
   const queryClient = useQueryClient()
 
   const mutation = useMutation({
     mutationFn: async (data: LoginInput) => {
-      const response = await api.post('/auth/login', data)
+      const response = await api.post('/auth/signup', data)
 
       return response.data
     },
@@ -20,7 +20,7 @@ export const useLogin = () => {
   })
 
   return {
-    login: mutation.mutateAsync,
+    signup: mutation.mutateAsync,
     isPending: mutation.isPending,
     error: mutation.error,
   }

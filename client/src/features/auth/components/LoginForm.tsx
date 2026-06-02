@@ -23,6 +23,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { loginSchema, type LoginInput } from '../schemas/loginSchema'
 import { useLogin } from '../hooks/useLogin'
+import { getErrorMessage } from '@/lib/getErrorMessage'
 
 export default function LoginForm({
   className,
@@ -30,7 +31,7 @@ export default function LoginForm({
 }: React.ComponentProps<'div'>) {
   const router = useRouter()
   const { login, isPending, error: loginError } = useLogin()
-
+  const errorMessage = getErrorMessage(loginError)
   const {
     register,
     handleSubmit,
@@ -64,9 +65,9 @@ export default function LoginForm({
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)}>
             <FieldGroup>
-              {loginError && (
+              {errorMessage && (
                 <div className='text-sm font-medium text-destructive text-center'>
-                  {loginError}
+                  {errorMessage}
                 </div>
               )}
               <Field>
