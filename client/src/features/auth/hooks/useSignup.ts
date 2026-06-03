@@ -1,14 +1,14 @@
 import { api } from '@/lib/api'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import type { LoginInput } from '../schemas/loginSchema'
+import type { SignupInput } from '../schemas/signupSchema'
 
 export const useSignup = () => {
   const queryClient = useQueryClient()
 
   const mutation = useMutation({
-    mutationFn: async (data: LoginInput) => {
-      const response = await api.post('/auth/signup', data)
-
+    mutationFn: async (data: SignupInput) => {
+      const { confirmPassword, ...signupData } = data
+      const response = await api.post('/auth/signup', signupData)
       return response.data
     },
 
