@@ -9,11 +9,11 @@ import { hashToken } from '../utils/hashToken.js'
 import jwt from 'jsonwebtoken'
 
 export const signupService = async (data: SignupInput) => {
-  const { username, email, password } = data
+  const { email, password } = data
 
   const existingUser = await prisma.user.findFirst({
     where: {
-      OR: [{ email }, { username }],
+      OR: [{ email }],
     },
   })
 
@@ -25,7 +25,6 @@ export const signupService = async (data: SignupInput) => {
 
   const user = await prisma.user.create({
     data: {
-      username,
       email,
       password: hashedPassword,
     },
@@ -46,7 +45,7 @@ export const signupService = async (data: SignupInput) => {
   return {
     accessToken,
     refreshToken,
-    user: { id: user.id, username: user.username, email: user.email },
+    user: { id: user.id, email: user.email },
   }
 }
 
@@ -85,7 +84,7 @@ export const loginService = async (data: LoginInput) => {
   return {
     accessToken,
     refreshToken,
-    user: { id: user.id, username: user.username, email: user.email },
+    user: { id: user.id, email: user.email },
   }
 }
 
@@ -107,7 +106,6 @@ export const getMeService = async (userId: string) => {
     },
     select: {
       id: true,
-      username: true,
       email: true,
     },
   })
