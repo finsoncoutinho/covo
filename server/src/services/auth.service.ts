@@ -7,6 +7,8 @@ import { hashPassword } from '../utils/hashPassword.js'
 import type { LoginInput, SignupInput } from '../validators/auth.validator.js'
 import { hashToken } from '../utils/hashToken.js'
 import jwt from 'jsonwebtoken'
+import crypto from 'crypto'
+import { sendResetPasswordEmail } from '../utils/emails/sendResetPasswordEmail.js'
 
 export const signupService = async (data: SignupInput) => {
   const { email, password } = data
@@ -151,4 +153,63 @@ export const refreshAccessTokenService = async (refreshToken: string) => {
   const accessToken = generateAccessToken(user.id)
 
   return { accessToken }
+}
+
+export const forgotPasswordService = async (email: string) => {
+  const user = await prisma.user.findUnique({
+    where: { email },
+  })
+
+  if (!user) {
+    return
+  }
+
+  const token = crypto.randomBytes(32).toString('hex')
+
+  const hashedToken = hashToken(token)
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      resetPasswordToken: hashedToken,
+      resetPasswordExpiry: new Date(Date.now() + 15 * 60 * 1000),
+    },
+  })
+
+  const resetUrl = `${process.env.CLIENT_URL}/reset-password?token=${token}`
+
+  await sendResetPasswordEmail(user.email, resetUrl)
+}
+
+export const resetPasswordService = async (token: string, password: string) => {
+  const hashedToken = hashToken(token)
+
+  const user = await prisma.user.findFirst({
+    where: {
+      resetPasswordToken: hashedToken,
+      resetPasswordExpiry: {
+        gt: new Date(),
+      },
+    },
+  })
+
+  if (!user) {
+    throw new ApiError(400, 'Invalid or expired reset token')
+  }
+
+  const hashedPassword = await hashPassword(password)
+
+  await prisma.user.update({
+    where: {
+      id: user.id,
+    },
+    data: {
+      password: hashedPassword,
+
+      resetPasswordToken: null,
+      resetPasswordExpiry: null,
+
+      refreshToken: null,
+    },
+  })
 }

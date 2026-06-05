@@ -6,6 +6,8 @@ import {
   logoutService,
   getMeService,
   refreshAccessTokenService,
+  forgotPasswordService,
+  resetPasswordService,
 } from '../services/auth.service.js'
 import { signupSchema, loginSchema } from '../validators/auth.validator.js'
 import { ApiError } from '../utils/ApiError.js'
@@ -114,4 +116,30 @@ export const getMe: RequestHandler = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(new ApiResponse(200, user, 'User fetched successfully'))
+})
+
+export const forgotPassword: RequestHandler = asyncHandler(async (req, res) => {
+  const { email } = req.body
+
+  await forgotPasswordService(email)
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        null,
+        'If an account exists, a reset link has been sent',
+      ),
+    )
+})
+
+export const resetPassword: RequestHandler = asyncHandler(async (req, res) => {
+  const { token, password } = req.body
+
+  await resetPasswordService(token, password)
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, null, 'Password reset successful'))
 })

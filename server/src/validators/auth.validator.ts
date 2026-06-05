@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { passwordSchema } from './passwordSchema.js'
 
 export const signupSchema = z.object({
   email: z.email('Invalid email address'),
@@ -23,3 +24,10 @@ export const loginSchema = z.object({
 })
 
 export type LoginInput = z.infer<typeof loginSchema>
+
+export const resetPasswordSchema = z.object({
+  token: z.string().min(1, 'Token is required'),
+  password: passwordSchema,
+})
+
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>
