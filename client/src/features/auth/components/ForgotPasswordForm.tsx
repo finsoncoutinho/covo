@@ -21,38 +21,43 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { signupSchema, type SignupInput } from '../schemas/signupSchema'
-import { useSignup } from '../hooks/useSignup'
+import {
+  forgotPasswordSchema,
+  type ForgotPasswordInput,
+} from '../schemas/forgotPasswordSchema'
+import { useForgotPassword } from '../hooks/useForgotPassword'
 import { getErrorMessage } from '@/lib/getErrorMessage'
-import { PasswordStrengthIndicator } from './PasswordStrengthIndicator'
 
-export default function SignupForm({
+export default function ForgotPasswordForm({
   className,
   ...props
 }: React.ComponentProps<'div'>) {
   const router = useRouter()
-  const { signup, isPending, error: signupError } = useSignup()
-  const errorMessage = getErrorMessage(signupError)
+  const {
+    forgotPassword,
+    isPending,
+    error: forgotPasswordError,
+  } = useForgotPassword()
+  const errorMessage = getErrorMessage(forgotPasswordError)
   const {
     register,
     handleSubmit,
-    watch,
     formState: { errors },
-  } = useForm<SignupInput>({
-    resolver: zodResolver(signupSchema),
+  } = useForm<ForgotPasswordInput>({
+    resolver: zodResolver(forgotPasswordSchema),
     defaultValues: {
       email: '',
-      password: '',
-      confirmPassword: '',
     },
   })
 
-  const password = watch('password') || ''
-
-  const onSubmit = async (data: SignupInput) => {
+  const onSubmit = async (data: ForgotPasswordInput) => {
     try {
-      await signup(data)
-      router.push('/dashboard')
+      await forgotPassword(data)
+      router.push(
+        `/check-email?type=reset-password&email=${encodeURIComponent(
+          data.email,
+        )}`,
+      )
     } catch (err) {
       // Error is handled by the hook/mutation
     }
@@ -62,9 +67,10 @@ export default function SignupForm({
     <div className={cn('flex flex-col gap-6', className)} {...props}>
       <Card className='border border-border shadow-sm'>
         <CardHeader>
-          <CardTitle>Create your account</CardTitle>
+          <CardTitle>Reset Password</CardTitle>
           <CardDescription>
-            Sign up to continue your deep work session.
+            Enter your email address associated with your account, and
+            we&apos;ll send you a link to reset your password.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -88,38 +94,13 @@ export default function SignupForm({
                 )}
               </Field>
               <Field>
-                <FieldLabel htmlFor='password'>Password</FieldLabel>
-
-                <Input
-                  id='password'
-                  type='password'
-                  {...register('password')}
-                />
-                <PasswordStrengthIndicator password={password} />
-              </Field>
-              <Field>
-                <div className='flex items-center'>
-                  <FieldLabel htmlFor='confirmPassword'>
-                    Confirm Password
-                  </FieldLabel>
-                </div>
-                <Input
-                  id='confirmPassword'
-                  type='password'
-                  {...register('confirmPassword')}
-                />
-                {errors.confirmPassword && (
-                  <FieldError>{errors.confirmPassword.message}</FieldError>
-                )}
-              </Field>
-              <Field>
                 <Button type='submit' disabled={isPending} className='w-full'>
-                  {isPending ? 'Signing up...' : 'Sign Up'}
+                  {isPending ? 'Sending link...' : 'Send Reset Link'}
                 </Button>
-                <FieldDescription className='text-center'>
-                  Already have an account? <Link href='/login'>Sign in</Link>
-                </FieldDescription>
               </Field>
+              <FieldDescription className='text-center'>
+                Remembered your password? <Link href='/login'>Log in</Link>
+              </FieldDescription>
             </FieldGroup>
           </form>
         </CardContent>

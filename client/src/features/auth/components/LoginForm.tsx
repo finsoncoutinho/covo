@@ -25,10 +25,15 @@ import { loginSchema, type LoginInput } from '../schemas/loginSchema'
 import { useLogin } from '../hooks/useLogin'
 import { getErrorMessage } from '@/lib/getErrorMessage'
 
+interface LoginFormProps extends React.ComponentProps<'div'> {
+  resetSuccess?: boolean
+}
+
 export default function LoginForm({
   className,
+  resetSuccess,
   ...props
-}: React.ComponentProps<'div'>) {
+}: LoginFormProps) {
   const router = useRouter()
   const { login, isPending, error: loginError } = useLogin()
   const errorMessage = getErrorMessage(loginError)
@@ -65,6 +70,12 @@ export default function LoginForm({
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)}>
             <FieldGroup>
+              {resetSuccess && (
+                <div className='rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-800'>
+                  Your password has been reset successfully. Please sign in with
+                  your new password.
+                </div>
+              )}
               {errorMessage && (
                 <div className='text-sm font-medium text-destructive text-center'>
                   {errorMessage}
@@ -85,12 +96,12 @@ export default function LoginForm({
               <Field>
                 <div className='flex items-center'>
                   <FieldLabel htmlFor='password'>Password</FieldLabel>
-                  <a
-                    href='#'
+                  <Link
+                    href='/forgot-password'
                     className='ml-auto inline-block text-sm underline-offset-4 hover:underline'
                   >
                     Forgot your password?
-                  </a>
+                  </Link>
                 </div>
                 <Input
                   id='password'
@@ -102,7 +113,11 @@ export default function LoginForm({
                 )}
               </Field>
               <Field>
-                <Button type='submit' disabled={isPending} className='w-full'>
+                <Button
+                  type='submit'
+                  disabled={isPending}
+                  className='w-full cursor-pointer'
+                >
                   {isPending ? 'Signing in...' : 'Sign In'}
                 </Button>
                 <FieldDescription className='text-center'>

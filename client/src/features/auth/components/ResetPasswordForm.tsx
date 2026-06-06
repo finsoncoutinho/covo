@@ -21,27 +21,35 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { signupSchema, type SignupInput } from '../schemas/signupSchema'
-import { useSignup } from '../hooks/useSignup'
+import {
+  resetPasswordFormSchema,
+  type ResetPasswordFormInput,
+  type ResetPasswordInput,
+} from '../schemas/resetPasswordSchema'
+import { useResetPassword } from '../hooks/useResetPassword'
 import { getErrorMessage } from '@/lib/getErrorMessage'
 import { PasswordStrengthIndicator } from './PasswordStrengthIndicator'
 
-export default function SignupForm({
+export default function ResetPasswordForm({
   className,
+  token,
   ...props
-}: React.ComponentProps<'div'>) {
+}: React.ComponentProps<'div'> & { token: string }) {
   const router = useRouter()
-  const { signup, isPending, error: signupError } = useSignup()
-  const errorMessage = getErrorMessage(signupError)
+  const {
+    resetPassword,
+    isPending,
+    error: resetPasswordError,
+  } = useResetPassword()
+  const errorMessage = getErrorMessage(resetPasswordError)
   const {
     register,
     handleSubmit,
     watch,
     formState: { errors },
-  } = useForm<SignupInput>({
-    resolver: zodResolver(signupSchema),
+  } = useForm<ResetPasswordFormInput>({
+    resolver: zodResolver(resetPasswordFormSchema),
     defaultValues: {
-      email: '',
       password: '',
       confirmPassword: '',
     },
@@ -49,10 +57,14 @@ export default function SignupForm({
 
   const password = watch('password') || ''
 
-  const onSubmit = async (data: SignupInput) => {
+  const onSubmit = async (data: ResetPasswordFormInput) => {
     try {
-      await signup(data)
-      router.push('/dashboard')
+      const payload: ResetPasswordInput = {
+        password: data.password,
+        token: token,
+      }
+      await resetPassword(payload)
+      router.push('/login?reset=success')
     } catch (err) {
       // Error is handled by the hook/mutation
     }
@@ -62,9 +74,9 @@ export default function SignupForm({
     <div className={cn('flex flex-col gap-6', className)} {...props}>
       <Card className='border border-border shadow-sm'>
         <CardHeader>
-          <CardTitle>Create your account</CardTitle>
+          <CardTitle>Reset Password</CardTitle>
           <CardDescription>
-            Sign up to continue your deep work session.
+            Enter your new password to continue.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -75,21 +87,11 @@ export default function SignupForm({
                   {errorMessage}
                 </div>
               )}
-              <Field>
-                <FieldLabel htmlFor='email'>Email</FieldLabel>
-                <Input
-                  id='email'
-                  type='email'
-                  placeholder='m@example.com'
-                  {...register('email')}
-                />
-                {errors.email && (
-                  <FieldError>{errors.email.message}</FieldError>
-                )}
-              </Field>
-              <Field>
-                <FieldLabel htmlFor='password'>Password</FieldLabel>
 
+              <Field>
+                <div className='flex items-center'>
+                  <FieldLabel htmlFor='password'>Password</FieldLabel>
+                </div>
                 <Input
                   id='password'
                   type='password'
@@ -114,10 +116,10 @@ export default function SignupForm({
               </Field>
               <Field>
                 <Button type='submit' disabled={isPending} className='w-full'>
-                  {isPending ? 'Signing up...' : 'Sign Up'}
+                  {isPending ? 'Resetting password...' : 'Reset Password'}
                 </Button>
                 <FieldDescription className='text-center'>
-                  Already have an account? <Link href='/login'>Sign in</Link>
+                  <Link href='/login'>Back to Login</Link>
                 </FieldDescription>
               </Field>
             </FieldGroup>
