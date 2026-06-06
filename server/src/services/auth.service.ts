@@ -155,6 +155,25 @@ export const refreshAccessTokenService = async (refreshToken: string) => {
   return { accessToken }
 }
 
+export const validateResetTokenService = async (token: string) => {
+  const hashedToken = hashToken(token)
+
+  const user = await prisma.user.findFirst({
+    where: {
+      resetPasswordToken: hashedToken,
+      resetPasswordExpiry: {
+        gt: new Date(),
+      },
+    },
+  })
+
+  if (!user) {
+    throw new ApiError(400, 'Invalid or expired reset token')
+  }
+
+  return true
+}
+
 export const forgotPasswordService = async (email: string) => {
   const user = await prisma.user.findUnique({
     where: { email },

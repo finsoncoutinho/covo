@@ -8,6 +8,7 @@ import {
   getMe,
   forgotPassword,
   resetPassword,
+  validateResetToken,
 } from '../controllers/auth.controller.js'
 import {
   forgotPasswordRateLimiter,
@@ -28,6 +29,8 @@ router.post('/refresh', refreshAccessToken)
 router.post('/forgot-password', forgotPasswordRateLimiter, forgotPassword)
 
 router.post('/reset-password', resetPassword)
+
+router.get('/validate-reset-token', validateResetToken)
 
 router.get('/me', protect, getMe)
 

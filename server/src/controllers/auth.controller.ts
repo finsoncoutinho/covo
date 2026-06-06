@@ -8,6 +8,7 @@ import {
   refreshAccessTokenService,
   forgotPasswordService,
   resetPasswordService,
+  validateResetTokenService,
 } from '../services/auth.service.js'
 import {
   signupSchema,
@@ -162,9 +163,28 @@ export const resetPassword: RequestHandler = asyncHandler(async (req, res) => {
     )
   }
 
-  await resetPasswordService(validatedData.data.token, validatedData.data.password)
+  await resetPasswordService(
+    validatedData.data.token,
+    validatedData.data.password,
+  )
 
   return res
     .status(200)
     .json(new ApiResponse(200, null, 'Password reset successful'))
 })
+
+export const validateResetToken: RequestHandler = asyncHandler(
+  async (req, res) => {
+    const token = req.query.token as string
+
+    if (!token) {
+      throw new ApiError(400, 'Reset token is required')
+    }
+
+    await validateResetTokenService(token)
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, null, 'Reset token is valid'))
+  },
+)
