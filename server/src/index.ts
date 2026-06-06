@@ -1,10 +1,7 @@
+import 'dotenv/config'
 import http from 'http'
-import dotenv from 'dotenv'
 import { Server } from 'socket.io'
-
-import app from './app'
-
-dotenv.config()
+import app from './app.js'
 
 const PORT = process.env.PORT || 5000
 
