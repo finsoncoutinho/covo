@@ -5,8 +5,9 @@ import prisma from './lib/prisma.js'
 import cookieParser from 'cookie-parser'
 import authRoutes from './routes/auth.routes.js'
 import { errorHandler } from './middlewares/error.middleware.js'
+import { globalRateLimiter } from './middlewares/rateLimit.js'
 const app: Express = express()
-
+app.set('trust proxy', 1)
 app.use(
   cors({
     origin: process.env.CLIENT_URL,
@@ -16,7 +17,7 @@ app.use(
 app.use(cookieParser())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
-
+app.use(globalRateLimiter)
 app.use('/api/auth', authRoutes)
 
 app.get('/api/users', async (_req, res) => {

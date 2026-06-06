@@ -9,7 +9,12 @@ import {
   forgotPasswordService,
   resetPasswordService,
 } from '../services/auth.service.js'
-import { signupSchema, loginSchema } from '../validators/auth.validator.js'
+import {
+  signupSchema,
+  loginSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+} from '../validators/auth.validator.js'
 import { ApiError } from '../utils/ApiError.js'
 import { ApiResponse } from '../utils/ApiResponse.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
@@ -119,9 +124,19 @@ export const getMe: RequestHandler = asyncHandler(async (req, res) => {
 })
 
 export const forgotPassword: RequestHandler = asyncHandler(async (req, res) => {
-  const { email } = req.body
+  const validatedData = forgotPasswordSchema.safeParse(req.body)
 
-  await forgotPasswordService(email)
+  if (!validatedData.success) {
+    throw new ApiError(
+      400,
+      'Validation failed',
+      Object.values(
+        validatedData.error.flatten().fieldErrors,
+      ).flat() as string[],
+    )
+  }
+
+  await forgotPasswordService(validatedData.data.email)
 
   return res
     .status(200)
@@ -135,9 +150,19 @@ export const forgotPassword: RequestHandler = asyncHandler(async (req, res) => {
 })
 
 export const resetPassword: RequestHandler = asyncHandler(async (req, res) => {
-  const { token, password } = req.body
+  const validatedData = resetPasswordSchema.safeParse(req.body)
 
-  await resetPasswordService(token, password)
+  if (!validatedData.success) {
+    throw new ApiError(
+      400,
+      'Validation failed',
+      Object.values(
+        validatedData.error.flatten().fieldErrors,
+      ).flat() as string[],
+    )
+  }
+
+  await resetPasswordService(validatedData.data.token, validatedData.data.password)
 
   return res
     .status(200)

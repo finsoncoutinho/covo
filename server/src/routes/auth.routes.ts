@@ -9,18 +9,23 @@ import {
   forgotPassword,
   resetPassword,
 } from '../controllers/auth.controller.js'
+import {
+  forgotPasswordRateLimiter,
+  loginRateLimiter,
+  signupRateLimiter,
+} from '../middlewares/rateLimit.js'
 
 const router: Router = Router()
 
-router.post('/signup', signup)
+router.post('/signup', signupRateLimiter, signup)
 
-router.post('/login', login)
+router.post('/login', loginRateLimiter, login)
 
 router.post('/logout', logout)
 
 router.post('/refresh', refreshAccessToken)
 
-router.post('/forgot-password', forgotPassword)
+router.post('/forgot-password', forgotPasswordRateLimiter, forgotPassword)
 
 router.post('/reset-password', resetPassword)
 
