@@ -2,29 +2,36 @@
 
 > Deep work, together.
 
-Covo is a modern real-time collaborative deep work platform designed for remote workers, creators, engineers, and students.
+Covo is a virtual coworking space that helps ambitious people stay focused through presence, accountability, and shared progress.
 
-The platform allows users to:
-
-- create collaborative focus rooms
-- work together in real-time
-- stay accountable through shared sessions
-- communicate through voice/video
-- collaborate in distraction-free environments
-- use AI-powered productivity tools
+Whether you're building a startup, preparing for interviews, creating content, learning new skills, or pursuing personal goals, Covo provides a calm environment where you can work alongside others and make meaningful progress together.
 
 ---
 
 # Vision
 
-Covo is built around the idea that focused work becomes easier when done together.
+Focused work is easier when you're surrounded by other focused people.
 
-The goal is to create:
+Covo recreates the feeling of working in a productive coffee shop, library, or coworking space from anywhere in the world.
 
-- intentional work environments
-- collaborative deep work spaces
-- lightweight realtime interaction
-- calm and modern digital workspaces
+The goal is to help people:
+
+- Stay accountable
+- Work with intention
+- Build momentum
+- Share progress
+- Make consistent progress on meaningful projects
+
+---
+
+# Core Principles
+
+Every feature in Covo is designed to reinforce one or more of:
+
+- Presence
+- Accountability
+- Progress
+- Community
 
 ---
 
@@ -37,6 +44,7 @@ The goal is to create:
 - TypeScript
 - Tailwind CSS
 - shadcn/ui
+- TanStack Query
 
 ## Backend
 
@@ -57,10 +65,6 @@ The goal is to create:
 
 - WebRTC
 
-## AI
-
-- OpenAI APIs
-
 ---
 
 # Architecture
@@ -77,3 +81,7 @@ covo/
 ```
 
 ---
+
+# Long-Term Goal
+
+Build the digital coffee shop for builders, creators, students, and professionals who do their best work when surrounded by other focused people.
