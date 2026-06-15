@@ -1,6 +1,7 @@
 import { nanoid } from 'nanoid'
 import prisma from '../lib/prisma.js'
 import type { CreateRoomInput } from '../validators/room.validator.js'
+import { ApiError } from '../utils/ApiError.js'
 
 export const createRoomService = async (
   userId: string,
@@ -28,4 +29,111 @@ export const createRoomService = async (
   })
 
   return room
+}
+
+export const getMyRoomsService = async (userId: string) => {
+  const memberships = await prisma.roomMember.findMany({
+    where: {
+      userId,
+    },
+
+    select: {
+      role: true,
+
+      room: {
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          visibility: true,
+
+          _count: {
+            select: {
+              memberships: true,
+            },
+          },
+        },
+      },
+    },
+
+    orderBy: {
+      joinedAt: 'desc',
+    },
+  })
+
+  return memberships.map((m) => ({
+    id: m.room.id,
+    name: m.room.name,
+    description: m.room.description,
+    visibility: m.room.visibility,
+    currentUserRole: m.role,
+    memberCount: m.room._count.memberships,
+  }))
+}
+
+export const getRoomByIdService = async (roomId: string, userId: string) => {
+  const room = await prisma.room.findUnique({
+    where: {
+      id: roomId,
+    },
+
+    include: {
+      memberships: {
+        select: {
+          role: true,
+
+          user: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      },
+
+      _count: {
+        select: {
+          memberships: true,
+        },
+      },
+    },
+  })
+
+  if (!room) {
+    throw new ApiError(404, 'Room not found')
+  }
+
+  const currentUserMembership = await prisma.roomMember.findUnique({
+    where: {
+      roomId_userId: {
+        roomId,
+        userId,
+      },
+    },
+
+    select: {
+      role: true,
+    },
+  })
+
+  if (room.visibility === 'PRIVATE' && !currentUserMembership) {
+    throw new ApiError(403, 'Access denied')
+  }
+
+  return {
+    id: room.id,
+    name: room.name,
+    description: room.description,
+    visibility: room.visibility,
+
+    currentUserRole: currentUserMembership?.role ?? null,
+
+    memberCount: room._count.memberships,
+
+    members: room.memberships.map((member) => ({
+      id: member.user.id,
+      name: member.user.name,
+      role: member.role,
+    })),
+  }
 }

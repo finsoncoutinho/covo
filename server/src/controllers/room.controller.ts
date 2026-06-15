@@ -5,7 +5,11 @@ import { ApiResponse } from '../utils/ApiResponse.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
 
 import { createRoomSchema } from '../validators/room.validator.js'
-import { createRoomService } from '../services/room.service.js'
+import {
+  createRoomService,
+  getMyRoomsService,
+  getRoomByIdService,
+} from '../services/room.service.js'
 
 export const createRoom: RequestHandler = asyncHandler(async (req, res) => {
   const validatedData = createRoomSchema.safeParse(req.body)
@@ -25,4 +29,26 @@ export const createRoom: RequestHandler = asyncHandler(async (req, res) => {
   return res
     .status(201)
     .json(new ApiResponse(201, room, 'Room created successfully'))
+})
+
+export const getMyRooms: RequestHandler = asyncHandler(async (req, res) => {
+  const rooms = await getMyRoomsService(req.user!.userId)
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, rooms, 'Rooms fetched successfully'))
+})
+
+export const getRoomById: RequestHandler = asyncHandler(async (req, res) => {
+  const { roomId } = req.params
+
+  if (!roomId || typeof roomId !== 'string') {
+    throw new ApiError(400, 'Invalid or missing room ID')
+  }
+
+  const room = await getRoomByIdService(roomId, req.user!.userId)
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, room, 'Room fetched successfully'))
 })
