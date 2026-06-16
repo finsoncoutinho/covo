@@ -8,6 +8,7 @@ import { createRoomSchema } from '../validators/room.validator.js'
 import {
   createRoomService,
   getMyRoomsService,
+  getPublicRoomsService,
   getRoomByIdService,
 } from '../services/room.service.js'
 
@@ -51,4 +52,23 @@ export const getRoomById: RequestHandler = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(new ApiResponse(200, room, 'Room fetched successfully'))
+})
+
+export const getPublicRooms: RequestHandler = asyncHandler(async (req, res) => {
+  const search =
+    typeof req.query.search === 'string' ? req.query.search : undefined
+
+  const page = Number(req.query.page) > 0 ? Number(req.query.page) : 1
+
+  const limit = Number(req.query.limit) > 0 ? Number(req.query.limit) : 20
+
+  const rooms = await getPublicRoomsService({
+    search,
+    page,
+    limit,
+  })
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, rooms, 'Rooms fetched successfully'))
 })

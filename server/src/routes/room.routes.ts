@@ -4,6 +4,7 @@ import {
   createRoom,
   getMyRooms,
   getRoomById,
+  getPublicRooms,
 } from '../controllers/room.controller.js'
 import { protect } from '../middlewares/auth.middleware.js'
 
@@ -11,5 +12,6 @@ const router: Router = Router()
 
 router.post('/', protect, createRoom)
 router.get('/me', protect, getMyRooms)
+router.get('/', protect, getPublicRooms)
 router.get('/:roomId', protect, getRoomById)
 export default router

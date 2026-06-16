@@ -137,3 +137,83 @@ export const getRoomByIdService = async (roomId: string, userId: string) => {
     })),
   }
 }
+
+export const getPublicRoomsService = async ({
+  search,
+  page = 1,
+  limit = 20,
+}: {
+  search?: string
+  page?: number
+  limit?: number
+}) => {
+  const skip = (page - 1) * limit
+
+  const where: Prisma.RoomWhereInput = {
+    visibility: 'PUBLIC',
+
+    ...(search && {
+      OR: [
+        {
+          name: {
+            contains: search,
+            mode: 'insensitive' as const,
+          },
+        },
+        {
+          description: {
+            contains: search,
+            mode: 'insensitive' as const,
+          },
+        },
+      ],
+    }),
+  }
+
+  const [rooms, total] = await Promise.all([
+    prisma.room.findMany({
+      where,
+
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        visibility: true,
+
+        _count: {
+          select: {
+            memberships: true,
+          },
+        },
+      },
+
+      skip,
+      take: limit,
+
+      orderBy: {
+        createdAt: 'desc',
+      },
+    }),
+
+    prisma.room.count({
+      where,
+    }),
+  ])
+
+  return {
+    rooms: rooms.map((room) => ({
+      id: room.id,
+      name: room.name,
+      description: room.description,
+      visibility: room.visibility,
+      memberCount: room._count.memberships,
+    })),
+
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+  }
+}
