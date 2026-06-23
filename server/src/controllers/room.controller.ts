@@ -10,6 +10,8 @@ import {
   getMyRoomsService,
   getPublicRoomsService,
   getRoomByIdService,
+  joinPrivateRoomService,
+  joinPublicRoomService,
 } from '../services/room.service.js'
 
 export const createRoom: RequestHandler = asyncHandler(async (req, res) => {
@@ -71,4 +73,30 @@ export const getPublicRooms: RequestHandler = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(new ApiResponse(200, rooms, 'Rooms fetched successfully'))
+})
+
+export const joinPublicRoom: RequestHandler<{
+  roomId: string
+}> = asyncHandler(async (req, res) => {
+  const { roomId } = req.params
+  const { userId } = req.user!
+
+  const membership = await joinPublicRoomService({ roomId, userId })
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, membership, 'Room joined successfully'))
+})
+
+export const joinPrivateRoom: RequestHandler<{
+  inviteCode: string
+}> = asyncHandler(async (req, res) => {
+  const { inviteCode } = req.params
+  const { userId } = req.user!
+
+  const membership = await joinPrivateRoomService({ inviteCode, userId })
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, membership, 'Room joined successfully'))
 })

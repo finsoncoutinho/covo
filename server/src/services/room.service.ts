@@ -2,6 +2,8 @@ import { nanoid } from 'nanoid'
 import prisma from '../lib/prisma.js'
 import type { CreateRoomInput } from '../validators/room.validator.js'
 import { ApiError } from '../utils/ApiError.js'
+import { Prisma } from '../generated/prisma/client.js'
+import type { JoinRoomInput } from '../types/rooms.js'
 
 export const createRoomService = async (
   userId: string,
@@ -143,9 +145,9 @@ export const getPublicRoomsService = async ({
   page = 1,
   limit = 20,
 }: {
-  search?: string
-  page?: number
-  limit?: number
+  search?: string | undefined
+  page?: number | undefined
+  limit?: number | undefined
 }) => {
   const skip = (page - 1) * limit
 
@@ -157,13 +159,13 @@ export const getPublicRoomsService = async ({
         {
           name: {
             contains: search,
-            mode: 'insensitive' as const,
+            mode: 'insensitive',
           },
         },
         {
           description: {
             contains: search,
-            mode: 'insensitive' as const,
+            mode: 'insensitive',
           },
         },
       ],
@@ -216,4 +218,120 @@ export const getPublicRoomsService = async ({
       totalPages: Math.ceil(total / limit),
     },
   }
+}
+
+export const joinPublicRoomService = async ({
+  roomId,
+  userId,
+}: {
+  roomId: string
+  userId: string
+}) => {
+  const [room, existingMembership] = await Promise.all([
+    prisma.room.findUnique({
+      where: {
+        id: roomId,
+      },
+      select: {
+        id: true,
+        visibility: true,
+      },
+    }),
+
+    prisma.roomMember.findUnique({
+      where: {
+        roomId_userId: {
+          roomId,
+          userId,
+        },
+      },
+    }),
+  ])
+
+  if (!room) {
+    throw new ApiError(404, 'Room not found')
+  }
+
+  if (room.visibility === 'PRIVATE') {
+    throw new ApiError(403, 'This is a private room.')
+  }
+
+  if (existingMembership) {
+    throw new ApiError(400, 'User is already a member of the room')
+  }
+
+  try {
+    const roomMember = await createRoomMembership(roomId, userId)
+
+    return roomMember
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2002') {
+        throw new ApiError(400, 'User is already a member of the room')
+      }
+    }
+    throw error
+  }
+}
+
+export const joinPrivateRoomService = async ({
+  userId,
+  inviteCode,
+}: {
+  userId: string
+  inviteCode: string
+}) => {
+  const room = await prisma.room.findUnique({
+    where: {
+      inviteCode,
+    },
+    select: {
+      id: true,
+      visibility: true,
+    },
+  })
+
+  if (!room) {
+    throw new ApiError(404, 'Room not found')
+  }
+
+  const existingMembership = await prisma.roomMember.findUnique({
+    where: {
+      roomId_userId: {
+        roomId: room.id,
+        userId,
+      },
+    },
+  })
+
+  if (existingMembership) {
+    throw new ApiError(400, 'User is already a member of the room')
+  }
+
+  try {
+    const roomMember = await createRoomMembership(room.id, userId)
+
+    return roomMember
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2002') {
+        throw new ApiError(400, 'User is already a member of the room')
+      }
+    }
+    throw error
+  }
+}
+
+const createRoomMembership = async (roomId: string, userId: string) => {
+  return prisma.roomMember.create({
+    data: {
+      roomId,
+      userId,
+      role: 'MEMBER',
+    },
+    select: {
+      roomId: true,
+      role: true,
+    },
+  })
 }
