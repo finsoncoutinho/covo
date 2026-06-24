@@ -3,7 +3,59 @@ import prisma from '../lib/prisma.js'
 import type { CreateRoomInput } from '../validators/room.validator.js'
 import { ApiError } from '../utils/ApiError.js'
 import { Prisma } from '../generated/prisma/client.js'
-import type { JoinRoomInput } from '../types/rooms.js'
+
+// ==========================
+// Membership Helpers
+// ==========================
+
+const createRoomMembership = async (roomId: string, userId: string) => {
+  return prisma.roomMember.create({
+    data: {
+      roomId,
+      userId,
+      role: 'MEMBER',
+    },
+    select: {
+      roomId: true,
+      role: true,
+    },
+  })
+}
+
+const removeRoomMembership = async (roomId: string, userId: string) => {
+  try {
+    await prisma.roomMember.delete({
+      where: { roomId_userId: { roomId, userId } },
+    })
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2025'
+    ) {
+      throw new ApiError(404, 'Room membership not found')
+    }
+    throw error
+  }
+}
+
+const getRoomMembership = async (roomId: string, userId: string) => {
+  return prisma.roomMember.findUnique({
+    where: {
+      roomId_userId: {
+        roomId,
+        userId,
+      },
+    },
+
+    select: {
+      role: true,
+    },
+  })
+}
+
+// ==========================
+// Room Services
+// ==========================
 
 export const createRoomService = async (
   userId: string,
@@ -105,18 +157,7 @@ export const getRoomByIdService = async (roomId: string, userId: string) => {
     throw new ApiError(404, 'Room not found')
   }
 
-  const currentUserMembership = await prisma.roomMember.findUnique({
-    where: {
-      roomId_userId: {
-        roomId,
-        userId,
-      },
-    },
-
-    select: {
-      role: true,
-    },
-  })
+  const currentUserMembership = await getRoomMembership(roomId, userId)
 
   if (room.visibility === 'PRIVATE' && !currentUserMembership) {
     throw new ApiError(403, 'Access denied')
@@ -238,14 +279,7 @@ export const joinPublicRoomService = async ({
       },
     }),
 
-    prisma.roomMember.findUnique({
-      where: {
-        roomId_userId: {
-          roomId,
-          userId,
-        },
-      },
-    }),
+    getRoomMembership(roomId, userId),
   ])
 
   if (!room) {
@@ -295,14 +329,7 @@ export const joinPrivateRoomService = async ({
     throw new ApiError(404, 'Room not found')
   }
 
-  const existingMembership = await prisma.roomMember.findUnique({
-    where: {
-      roomId_userId: {
-        roomId: room.id,
-        userId,
-      },
-    },
-  })
+  const existingMembership = await getRoomMembership(room.id, userId)
 
   if (existingMembership) {
     throw new ApiError(400, 'User is already a member of the room')
@@ -322,16 +349,29 @@ export const joinPrivateRoomService = async ({
   }
 }
 
-const createRoomMembership = async (roomId: string, userId: string) => {
-  return prisma.roomMember.create({
-    data: {
-      roomId,
-      userId,
-      role: 'MEMBER',
-    },
-    select: {
-      roomId: true,
-      role: true,
-    },
-  })
+export const leaveRoomService = async ({
+  roomId,
+  userId,
+}: {
+  roomId: string
+  userId: string
+}) => {
+  const membership = await getRoomMembership(roomId, userId)
+
+  if (!membership) {
+    throw new ApiError(404, 'Room membership not found')
+  }
+
+  if (membership.role === 'OWNER') {
+    throw new ApiError(
+      400,
+      'Transfer ownership or delete the room before leaving.',
+    )
+  }
+
+  await removeRoomMembership(roomId, userId)
+
+  return {
+    roomId,
+  }
 }

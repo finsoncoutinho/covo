@@ -12,6 +12,7 @@ import {
   getRoomByIdService,
   joinPrivateRoomService,
   joinPublicRoomService,
+  leaveRoomService,
 } from '../services/room.service.js'
 
 export const createRoom: RequestHandler = asyncHandler(async (req, res) => {
@@ -99,4 +100,17 @@ export const joinPrivateRoom: RequestHandler<{
   return res
     .status(200)
     .json(new ApiResponse(200, membership, 'Room joined successfully'))
+})
+
+export const leaveRoom: RequestHandler<{
+  roomId: string
+}> = asyncHandler(async (req, res) => {
+  const { roomId } = req.params
+  const { userId } = req.user!
+
+  await leaveRoomService({ roomId, userId })
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, null, 'Room left successfully'))
 })
