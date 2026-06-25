@@ -11,6 +11,7 @@ import {
   updateRoom,
   deleteRoom,
   kickMember,
+  regenerateInviteCode,
 } from '../controllers/room.controller.js'
 import { protect } from '../middlewares/auth.middleware.js'
 
@@ -25,6 +26,7 @@ router.post('/:roomId/join', protect, joinPublicRoom)
 router.delete('/:roomId/leave', protect, leaveRoom)
 router.delete('/:roomId/members/:memberId', protect, kickMember)
 router.patch('/:roomId', protect, updateRoom)
+router.patch('/:roomId/invite-code', protect, regenerateInviteCode)
 router.delete('/:roomId', protect, deleteRoom)
 
 export default router

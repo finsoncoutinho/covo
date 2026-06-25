@@ -1,4 +1,4 @@
-import { nanoid } from 'nanoid'
+import { generateRoomInviteCode } from '../utils/generateRoomInviteCode.js'
 import prisma from '../lib/prisma.js'
 import type { CreateRoomInput } from '../validators/room.validator.js'
 import { ApiError } from '../utils/ApiError.js'
@@ -52,6 +52,7 @@ const getRoomMembership = async (roomId: string, userId: string) => {
       room: {
         select: {
           inviteCode: true,
+          visibility: true,
         },
       },
     },
@@ -83,7 +84,8 @@ export const createRoomService = async (
   userId: string,
   data: CreateRoomInput,
 ) => {
-  const inviteCode = data.visibility === 'PRIVATE' ? nanoid(10) : null
+  const inviteCode =
+    data.visibility === 'PRIVATE' ? generateRoomInviteCode() : null
 
   const room = await prisma.room.create({
     data: {
@@ -427,7 +429,7 @@ export const updateRoomDetails = async ({
     data.visibility = visibility
 
     if (visibility === 'PRIVATE' && !membership.room.inviteCode) {
-      data.inviteCode = nanoid(10)
+      data.inviteCode = generateRoomInviteCode()
     }
     if (visibility === 'PUBLIC' && membership.room.inviteCode) {
       data.inviteCode = null
@@ -489,5 +491,45 @@ export const kickMemberService = async (
   return {
     roomId,
     userId: memberToKick,
+  }
+}
+
+export const regenerateInviteCodeService = async (
+  roomId: string,
+  userId: string,
+) => {
+  const membership = await assertRoomPermission(roomId, userId, ['OWNER'])
+
+  if (membership.room.visibility === 'PUBLIC') {
+    throw new ApiError(400, 'Cannot generate invite code for public room')
+  }
+
+  try {
+    const inviteCode = generateRoomInviteCode()
+
+    await prisma.room.update({
+      where: {
+        id: roomId,
+      },
+      data: {
+        inviteCode,
+      },
+    })
+
+    return {
+      inviteCode,
+    }
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2002'
+    ) {
+      throw new ApiError(
+        500,
+        'Failed to generate a unique invite code. Please try again.',
+      )
+    }
+
+    throw error
   }
 }
