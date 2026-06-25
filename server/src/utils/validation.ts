@@ -6,12 +6,18 @@ export type ValidationError = {
   error: string
 }
 
+export type ValidateRequestOptions = {
+  errorMessage?: string
+  includeFieldErrors?: boolean
+}
+
 export const validateRequest = <T>(
   schema: z.ZodType<T>,
   data: unknown,
-  errorMessage = 'Validation failed',
-  formatAsFieldErrors = true
+  options?: ValidateRequestOptions
 ): T => {
+  const errorMessage = options?.errorMessage ?? 'Validation failed'
+  const includeFieldErrors = options?.includeFieldErrors ?? true
   const result = schema.safeParse(data)
 
   if (!result.success) {
@@ -19,7 +25,7 @@ export const validateRequest = <T>(
     const globalErrors: string[] = []
 
     for (const err of result.error.issues) {
-      if (formatAsFieldErrors && err.path.length > 0) {
+      if (includeFieldErrors && err.path.length > 0) {
         fieldErrors.push({
           field: err.path.join('.'),
           error: err.message,

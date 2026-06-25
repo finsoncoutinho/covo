@@ -462,3 +462,32 @@ export const deleteRoomService = async (roomId: string, userId: string) => {
     roomId,
   }
 }
+
+export const kickMemberService = async (
+  roomId: string,
+  userId: string,
+  memberToKick: string,
+) => {
+  await assertRoomPermission(roomId, userId, ['OWNER'])
+
+  if (userId === memberToKick) {
+    throw new ApiError(400, 'You cannot kick yourself')
+  }
+
+  const targetMembership = await getRoomMembership(roomId, memberToKick)
+
+  if (!targetMembership) {
+    throw new ApiError(404, 'Member not found')
+  }
+
+  if (targetMembership.role === 'OWNER') {
+    throw new ApiError(400, 'Cannot kick the owner')
+  }
+
+  await removeRoomMembership(roomId, memberToKick)
+
+  return {
+    roomId,
+    userId: memberToKick,
+  }
+}

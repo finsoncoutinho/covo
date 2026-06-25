@@ -5,8 +5,15 @@ import { ApiResponse } from '../utils/ApiResponse.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
 import { validateRequest } from '../utils/validation.js'
 
-import { createRoomSchema, updateRoomSchema } from '../validators/room.validator.js'
-import { roomIdParamSchema } from '../validators/common.validator.js'
+import {
+  createRoomSchema,
+  updateRoomSchema,
+  kickMemberParamsSchema,
+} from '../validators/room.validator.js'
+import {
+  roomIdParamSchema,
+  userIdParamSchema,
+} from '../validators/common.validator.js'
 import {
   createRoomService,
   getMyRoomsService,
@@ -17,6 +24,7 @@ import {
   leaveRoomService,
   updateRoomDetails,
   deleteRoomService,
+  kickMemberService,
 } from '../services/room.service.js'
 
 export const createRoom: RequestHandler = asyncHandler(async (req, res) => {
@@ -38,7 +46,10 @@ export const getMyRooms: RequestHandler = asyncHandler(async (req, res) => {
 })
 
 export const getRoomById: RequestHandler = asyncHandler(async (req, res) => {
-  const { roomId } = validateRequest(roomIdParamSchema, req.params, 'Invalid room ID', false)
+  const { roomId } = validateRequest(roomIdParamSchema, req.params, {
+    errorMessage: 'Invalid room ID',
+    includeFieldErrors: false,
+  })
 
   const room = await getRoomByIdService(roomId, req.user!.userId)
 
@@ -69,7 +80,10 @@ export const getPublicRooms: RequestHandler = asyncHandler(async (req, res) => {
 export const joinPublicRoom: RequestHandler<{
   roomId: string
 }> = asyncHandler(async (req, res) => {
-  const { roomId } = validateRequest(roomIdParamSchema, req.params, 'Invalid room ID', false)
+  const { roomId } = validateRequest(roomIdParamSchema, req.params, {
+    errorMessage: 'Invalid room ID',
+    includeFieldErrors: false,
+  })
   const { userId } = req.user!
 
   const membership = await joinPublicRoomService({ roomId, userId })
@@ -95,7 +109,10 @@ export const joinPrivateRoom: RequestHandler<{
 export const leaveRoom: RequestHandler<{
   roomId: string
 }> = asyncHandler(async (req, res) => {
-  const { roomId } = validateRequest(roomIdParamSchema, req.params, 'Invalid room ID', false)
+  const { roomId } = validateRequest(roomIdParamSchema, req.params, {
+    errorMessage: 'Invalid room ID',
+    includeFieldErrors: false,
+  })
   const { userId } = req.user!
 
   await leaveRoomService({ roomId, userId })
@@ -108,7 +125,10 @@ export const leaveRoom: RequestHandler<{
 export const updateRoom: RequestHandler<{
   roomId: string
 }> = asyncHandler(async (req, res) => {
-  const { roomId } = validateRequest(roomIdParamSchema, req.params, 'Invalid room ID', false)
+  const { roomId } = validateRequest(roomIdParamSchema, req.params, {
+    errorMessage: 'Invalid room ID',
+    includeFieldErrors: false,
+  })
   const { userId } = req.user!
 
   const body = validateRequest(updateRoomSchema, req.body)
@@ -127,7 +147,10 @@ export const updateRoom: RequestHandler<{
 export const deleteRoom: RequestHandler<{
   roomId: string
 }> = asyncHandler(async (req, res) => {
-  const { roomId } = validateRequest(roomIdParamSchema, req.params, 'Invalid room ID', false)
+  const { roomId } = validateRequest(roomIdParamSchema, req.params, {
+    errorMessage: 'Invalid room ID',
+    includeFieldErrors: false,
+  })
   const { userId } = req.user!
 
   await deleteRoomService(roomId, userId)
@@ -135,4 +158,25 @@ export const deleteRoom: RequestHandler<{
   return res
     .status(200)
     .json(new ApiResponse(200, null, 'Room deleted successfully'))
+})
+
+export const kickMember: RequestHandler<{
+  roomId: string
+  memberId: string
+}> = asyncHandler(async (req, res) => {
+  const { roomId, memberId: memberToKick } = validateRequest(
+    kickMemberParamsSchema,
+    req.params,
+    {
+      errorMessage: 'Invalid parameters',
+      includeFieldErrors: false,
+    }
+  )
+  const { userId } = req.user!
+
+  await kickMemberService(roomId, userId, memberToKick)
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, null, 'Member kicked successfully'))
 })

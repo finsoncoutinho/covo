@@ -56,3 +56,10 @@ export const updateRoomSchema = z
   })
 
 export type UpdateRoomInput = z.infer<typeof updateRoomSchema>
+
+export const kickMemberParamsSchema = z.object({
+  roomId: z.string({ message: 'Room ID is required' }).cuid({ message: 'Invalid room ID format' }),
+  memberId: z.string({ message: 'Member ID is required' }).cuid({ message: 'Invalid member ID format' }),
+})
+
+export type KickMemberParamsInput = z.infer<typeof kickMemberParamsSchema>
