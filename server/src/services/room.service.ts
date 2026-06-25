@@ -448,3 +448,17 @@ export const updateRoomDetails = async ({
     visibility: updatedRoom.visibility,
   }
 }
+
+export const deleteRoomService = async (roomId: string, userId: string) => {
+  await assertRoomPermission(roomId, userId, ['OWNER'])
+
+  await prisma.room.delete({
+    where: {
+      id: roomId,
+    },
+  })
+
+  return {
+    roomId,
+  }
+}

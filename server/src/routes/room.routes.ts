@@ -9,6 +9,7 @@ import {
   joinPrivateRoom,
   leaveRoom,
   updateRoom,
+  deleteRoom,
 } from '../controllers/room.controller.js'
 import { protect } from '../middlewares/auth.middleware.js'
 
@@ -22,5 +23,6 @@ router.post('/join/:inviteCode', protect, joinPrivateRoom)
 router.post('/:roomId/join', protect, joinPublicRoom)
 router.delete('/:roomId/leave', protect, leaveRoom)
 router.patch('/:roomId', protect, updateRoom)
+router.delete('/:roomId', protect, deleteRoom)
 
 export default router
