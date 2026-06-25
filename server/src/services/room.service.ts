@@ -2,7 +2,7 @@ import { nanoid } from 'nanoid'
 import prisma from '../lib/prisma.js'
 import type { CreateRoomInput } from '../validators/room.validator.js'
 import { ApiError } from '../utils/ApiError.js'
-import { Prisma } from '../generated/prisma/client.js'
+import { Prisma, RoomRole, RoomVisibility } from '../generated/prisma/client.js'
 
 // ==========================
 // Membership Helpers
@@ -49,8 +49,30 @@ const getRoomMembership = async (roomId: string, userId: string) => {
 
     select: {
       role: true,
+      room: {
+        select: {
+          inviteCode: true,
+        },
+      },
     },
   })
+}
+
+const assertRoomPermission = async (
+  roomId: string,
+  userId: string,
+  allowedRoles: RoomRole[],
+) => {
+  const membership = await getRoomMembership(roomId, userId)
+
+  if (!membership || !allowedRoles.includes(membership.role)) {
+    throw new ApiError(
+      403,
+      'You do not have permission to perform this action.',
+    )
+  }
+
+  return membership
 }
 
 // ==========================
@@ -373,5 +395,56 @@ export const leaveRoomService = async ({
 
   return {
     roomId,
+  }
+}
+
+export const updateRoomDetails = async ({
+  roomId,
+  userId,
+  name,
+  description,
+  visibility,
+}: {
+  roomId: string
+  userId: string
+  name?: string | undefined
+  description?: string | undefined
+  visibility?: RoomVisibility | undefined
+}) => {
+  const membership = await assertRoomPermission(roomId, userId, ['OWNER'])
+
+  const data: Prisma.RoomUpdateInput = {}
+
+  if (name !== undefined) {
+    data.name = name
+  }
+
+  if (description !== undefined) {
+    data.description = description
+  }
+
+  if (visibility !== undefined) {
+    data.visibility = visibility
+
+    if (visibility === 'PRIVATE' && !membership.room.inviteCode) {
+      data.inviteCode = nanoid(10)
+    }
+    if (visibility === 'PUBLIC' && membership.room.inviteCode) {
+      data.inviteCode = null
+    }
+  }
+
+  const updatedRoom = await prisma.room.update({
+    where: {
+      id: roomId,
+    },
+    data,
+  })
+
+  return {
+    id: updatedRoom.id,
+    name: updatedRoom.name,
+    description: updatedRoom.description,
+    visibility: updatedRoom.visibility,
   }
 }
