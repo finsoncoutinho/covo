@@ -150,38 +150,27 @@ export const getMyRoomsService = async (userId: string) => {
 }
 
 export const getRoomByIdService = async (roomId: string, userId: string) => {
-  const room = await prisma.room.findUnique({
-    where: {
-      id: roomId,
-    },
+  const [room, currentUserMembership] = await Promise.all([
+    prisma.room.findUnique({
+      where: {
+        id: roomId,
+      },
 
-    include: {
-      memberships: {
-        select: {
-          role: true,
-
-          user: {
-            select: {
-              id: true,
-              name: true,
-            },
+      include: {
+        _count: {
+          select: {
+            memberships: true,
           },
         },
       },
+    }),
 
-      _count: {
-        select: {
-          memberships: true,
-        },
-      },
-    },
-  })
+    getRoomMembership(roomId, userId),
+  ])
 
   if (!room) {
     throw new ApiError(404, 'Room not found')
   }
-
-  const currentUserMembership = await getRoomMembership(roomId, userId)
 
   if (room.visibility === 'PRIVATE' && !currentUserMembership) {
     throw new ApiError(403, 'Access denied')
@@ -196,12 +185,95 @@ export const getRoomByIdService = async (roomId: string, userId: string) => {
     currentUserRole: currentUserMembership?.role ?? null,
 
     memberCount: room._count.memberships,
+  }
+}
 
-    members: room.memberships.map((member) => ({
+export const getRoomMembersService = async ({
+  roomId,
+  userId,
+  search,
+  page = 1,
+  limit = 20,
+}: {
+  roomId: string
+  userId: string
+  search?: string | undefined
+  page?: number | undefined
+  limit?: number | undefined
+}) => {
+  const skip = (page - 1) * limit
+
+  const where: Prisma.RoomMemberWhereInput = {
+    roomId,
+    ...(search && {
+      user: {
+        name: {
+          contains: search,
+          mode: 'insensitive',
+        },
+      },
+    }),
+  }
+
+  const [room, currentUserMembership] = await Promise.all([
+    prisma.room.findUnique({
+      where: {
+        id: roomId,
+      },
+      select: {
+        visibility: true,
+      },
+    }),
+
+    getRoomMembership(roomId, userId),
+  ])
+
+  if (!room) {
+    throw new ApiError(404, 'Room not found')
+  }
+
+  if (room.visibility === 'PRIVATE' && !currentUserMembership) {
+    throw new ApiError(403, 'Access denied')
+  }
+
+  const [memberships, total] = await Promise.all([
+    prisma.roomMember.findMany({
+      where,
+      select: {
+        role: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+      orderBy: {
+        user: {
+          name: 'asc',
+        },
+      },
+      skip,
+      take: limit,
+    }),
+    prisma.roomMember.count({
+      where,
+    }),
+  ])
+
+  return {
+    members: memberships.map((member) => ({
       id: member.user.id,
       name: member.user.name,
       role: member.role,
+      isCurrentUser: member.user.id === userId,
     })),
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
   }
 }
 

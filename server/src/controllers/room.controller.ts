@@ -26,6 +26,7 @@ import {
   deleteRoomService,
   kickMemberService,
   regenerateInviteCodeService,
+  getRoomMembersService,
 } from '../services/room.service.js'
 
 export const createRoom: RequestHandler = asyncHandler(async (req, res) => {
@@ -196,4 +197,31 @@ export const regenerateInviteCode: RequestHandler<{
   return res
     .status(200)
     .json(new ApiResponse(200, result, 'Invite code regenerated successfully'))
+})
+
+export const getRoomMembers: RequestHandler<{
+  roomId: string
+}> = asyncHandler(async (req, res) => {
+  const { roomId } = validateRequest(roomIdParamSchema, req.params, {
+    errorMessage: 'Invalid room ID',
+    includeFieldErrors: false,
+  })
+  const { userId } = req.user!
+
+  const page = Number(req.query.page) > 0 ? Number(req.query.page) : 1
+  const limit = Number(req.query.limit) > 0 ? Number(req.query.limit) : 20
+  const search =
+    typeof req.query.search === 'string' ? req.query.search : undefined
+
+  const members = await getRoomMembersService({
+    roomId,
+    userId,
+    search,
+    page,
+    limit,
+  })
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, members, 'Room members fetched successfully'))
 })
