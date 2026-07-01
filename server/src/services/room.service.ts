@@ -38,7 +38,9 @@ const removeRoomMembership = async (roomId: string, userId: string) => {
   }
 }
 
-const getRoomMembership = async (roomId: string, userId: string) => {
+const getRoomMembership = async (roomId: string, userId?: string) => {
+  if (!userId) return null;
+
   return prisma.roomMember.findUnique({
     where: {
       roomId_userId: {
@@ -149,7 +151,7 @@ export const getMyRoomsService = async (userId: string) => {
   }))
 }
 
-export const getRoomByIdService = async (roomId: string, userId: string) => {
+export const getRoomByIdService = async (roomId: string, userId?: string) => {
   const [room, currentUserMembership] = await Promise.all([
     prisma.room.findUnique({
       where: {
@@ -232,7 +234,7 @@ export const getRoomMembersService = async ({
     throw new ApiError(404, 'Room not found')
   }
 
-  if (room.visibility === 'PRIVATE' && !currentUserMembership) {
+  if (!currentUserMembership) {
     throw new ApiError(403, 'Access denied')
   }
 

@@ -53,7 +53,7 @@ export const getRoomById: RequestHandler = asyncHandler(async (req, res) => {
     includeFieldErrors: false,
   })
 
-  const room = await getRoomByIdService(roomId, req.user!.userId)
+  const room = await getRoomByIdService(roomId, req.user?.userId)
 
   return res
     .status(200)
