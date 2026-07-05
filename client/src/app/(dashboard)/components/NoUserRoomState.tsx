@@ -2,8 +2,9 @@
 
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { CreateRoomModal } from '@/features/rooms/components/CreateRoomModal'
+import { RoomModal } from '@/features/rooms/components/RoomModal'
 import { User } from '@/features/auth/types/user'
+import { Plus } from 'lucide-react'
 
 interface NoUserRoomStateProps {
   user: User | null
@@ -27,9 +28,12 @@ export function NoUserRoomState({ user }: NoUserRoomStateProps) {
           <Button asChild variant='outline' size='lg'>
             <Link href='/rooms'>Join</Link>
           </Button>
-          <CreateRoomModal>
-            <Button size='lg'>Create</Button>
-          </CreateRoomModal>
+          <RoomModal>
+            <Button className='gap-2'>
+              <Plus className='h-4 w-4' />
+              Create a Room
+            </Button>
+          </RoomModal>
         </div>
       </div>
     </main>

@@ -1,29 +1,33 @@
 'use client'
 
 import React from 'react'
-import { useMyRooms, type Room } from '@/features/rooms/hooks/useMyRooms'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { RoomModal } from '@/features/rooms/components/RoomModal'
+import { MyRoomsTab } from '@/features/rooms/components/MyRoomsTab'
+import { ExploreTab } from '@/features/rooms/components/ExploreTab'
 
 const Page = () => {
-  const { myRooms, isLoading } = useMyRooms()
-
-  if (isLoading) {
-    return <div>Loading rooms...</div>
-  }
-
   return (
-    <div className='p-6'>
-      <h1 className='text-2xl font-bold mb-4'>My Rooms</h1>
-      {myRooms?.length === 0 ? (
-        <p>No rooms found.</p>
-      ) : (
-        <ul className='space-y-2'>
-          {myRooms?.map((room: Room) => (
-            <li key={room.id} className='p-4 rounded-lg border border-border-default'>
-              {room.name}
-            </li>
-          ))}
-        </ul>
-      )}
+    <div className=''>
+      <Tabs defaultValue='my-rooms' className='w-full'>
+        <div className='flex items-center justify-between mb-6'>
+          <TabsList variant='line' className=''>
+            <TabsTrigger value='my-rooms'>My Rooms</TabsTrigger>
+            <TabsTrigger value='explore'>Explore</TabsTrigger>
+          </TabsList>
+          <div className='flex gap-2'>
+            <RoomModal />
+          </div>
+        </div>
+
+        <TabsContent value='my-rooms'>
+          <MyRoomsTab />
+        </TabsContent>
+
+        <TabsContent value='explore'>
+          <ExploreTab />
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

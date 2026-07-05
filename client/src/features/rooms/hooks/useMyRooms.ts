@@ -4,6 +4,11 @@ import { useQuery } from '@tanstack/react-query'
 export interface Room {
   id: string
   name: string
+  description: string
+  visibility: 'PUBLIC' | 'PRIVATE'
+  currentUserRole: 'OWNER' | 'MEMBER' | null
+  memberCount: number
+  imageUrl?: string
 }
 
 export const useMyRooms = () => {

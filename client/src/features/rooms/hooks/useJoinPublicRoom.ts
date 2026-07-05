@@ -1,0 +1,17 @@
+import { api } from '@/lib/api'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+
+export const useJoinPublicRoom = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (roomId: string) => {
+      const response = await api.post(`/rooms/${roomId}/join`)
+      return response.data.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['my-rooms'] })
+      queryClient.invalidateQueries({ queryKey: ['public-rooms'] })
+    },
+  })
+}
