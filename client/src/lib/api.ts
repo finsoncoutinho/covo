@@ -30,7 +30,23 @@ api.interceptors.response.use(
         return api(originalRequest)
       } catch {
         if (typeof window !== 'undefined') {
-          window.location.href = '/login'
+          const currentPath = window.location.pathname
+          
+          const protectedRoutes = [
+            '/dashboard',
+            '/rooms',
+            '/profile',
+            '/settings',
+            '/workspaces',
+          ]
+          
+          const isProtectedRoute = protectedRoutes.some((route) =>
+            currentPath.startsWith(route),
+          )
+          
+          if (isProtectedRoute) {
+            window.location.href = '/login'
+          }
         }
       }
     }

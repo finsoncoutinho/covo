@@ -39,7 +39,7 @@ const removeRoomMembership = async (roomId: string, userId: string) => {
 }
 
 const getRoomMembership = async (roomId: string, userId?: string) => {
-  if (!userId) return null;
+  if (!userId) return null
 
   return prisma.roomMember.findUnique({
     where: {
@@ -187,6 +187,7 @@ export const getRoomByIdService = async (roomId: string, userId?: string) => {
     currentUserRole: currentUserMembership?.role ?? null,
 
     memberCount: room._count.memberships,
+    ...(room.visibility === 'PRIVATE' && { inviteCode: room.inviteCode }),
   }
 }
 
@@ -605,5 +606,40 @@ export const regenerateInviteCodeService = async (
     }
 
     throw error
+  }
+}
+
+export const getRoomByInviteCodeService = async (
+  inviteCode: string,
+  userId?: string,
+) => {
+  const room = await prisma.room.findUnique({
+    where: { inviteCode },
+    include: {
+      _count: {
+        select: {
+          memberships: true,
+        },
+      },
+    },
+  })
+
+  if (!room) {
+    throw new ApiError(404, 'Room not found')
+  }
+
+  let isMember = false
+  if (userId) {
+    const membership = await getRoomMembership(room.id, userId)
+    isMember = !!membership
+  }
+
+  return {
+    id: room.id,
+    name: room.name,
+    description: room.description,
+    memberCount: room._count.memberships,
+    image: null,
+    isMember,
   }
 }

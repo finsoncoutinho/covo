@@ -1,18 +1,19 @@
 'use client'
 
 import React from 'react'
-import { useMyRooms, type Room } from '@/features/rooms/hooks/useMyRooms'
+import { useMyRooms } from '@/features/rooms/hooks/useMyRooms'
+import type { Room } from '@/types'
 import { RoomCard } from '@/features/rooms/components/RoomCard'
-import { RoomCardSkeleton } from '@/features/rooms/components/RoomCardSkeleton'
+import { CardSkeleton } from '@/components/skeletons/CardSkeleton'
 
 export function MyRoomsTab() {
   const { myRooms, isLoading } = useMyRooms()
 
   if (isLoading) {
     return (
-      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-        {[...Array(6)].map((_, i) => (
-          <RoomCardSkeleton key={i} />
+      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'>
+        {Array.from({ length: 4 }).map((_, i) => (
+          <CardSkeleton key={i} />
         ))}
       </div>
     )

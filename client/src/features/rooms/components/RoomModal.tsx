@@ -19,7 +19,7 @@ import {
 } from '../schemas/createRoomSchema'
 import { useCreateRoom } from '../hooks/useCreateRoom'
 import { useUpdateRoom } from '../hooks/useUpdateRoom'
-import { Room } from '../hooks/useMyRooms'
+import { type Room } from '@/types'
 import { toast } from 'sonner'
 
 interface RoomModalProps {

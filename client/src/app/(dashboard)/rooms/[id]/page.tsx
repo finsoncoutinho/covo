@@ -1,13 +1,13 @@
+import { RoomDetailClient } from '@/features/rooms/components/RoomDetailClient'
+
 interface PageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
-export default function RoomPage({ params }: PageProps) {
-  return (
-    <div className='flex items-center justify-center h-full p-8'>
-      <p className='text-lg text-muted-foreground'>Room ID: {params.id}</p>
-    </div>
-  )
+export default async function RoomPage({ params }: PageProps) {
+  const { id } = await params
+
+  return <RoomDetailClient roomId={id} />
 }

@@ -1,15 +1,6 @@
 import { api } from '@/lib/api'
 import { useQuery } from '@tanstack/react-query'
-
-export interface Room {
-  id: string
-  name: string
-  description: string
-  visibility: 'PUBLIC' | 'PRIVATE'
-  currentUserRole: 'OWNER' | 'MEMBER' | null
-  memberCount: number
-  imageUrl?: string
-}
+import type { Room } from '@/types'
 
 export const useMyRooms = () => {
   const query = useQuery({

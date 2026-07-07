@@ -1,18 +1,17 @@
 import { api } from '@/lib/api'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
-export const useJoinPublicRoom = () => {
+export const useDeleteRoom = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async (roomId: string) => {
-      const response = await api.post(`/rooms/${roomId}/join`)
-      return response.data.data
+      const response = await api.delete(`/rooms/${roomId}`)
+      return response.data
     },
-    onSuccess: (_, roomId) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['my-rooms'] })
       queryClient.invalidateQueries({ queryKey: ['public-rooms'] })
-      queryClient.invalidateQueries({ queryKey: ['room', roomId] })
     },
   })
 }

@@ -13,6 +13,7 @@ import {
   kickMember,
   regenerateInviteCode,
   getRoomMembers,
+  getRoomByInviteCode,
 } from '../controllers/room.controller.js'
 import { protect, optionalAuth } from '../middlewares/auth.middleware.js'
 
@@ -23,6 +24,7 @@ router.get('/me', protect, getMyRooms)
 router.get('/', getPublicRooms)
 router.get('/:roomId', optionalAuth, getRoomById)
 router.get('/:roomId/members', protect, getRoomMembers)
+router.get('/invite/:inviteCode', optionalAuth, getRoomByInviteCode)
 router.post('/join/:inviteCode', protect, joinPrivateRoom)
 router.post('/:roomId/join', protect, joinPublicRoom)
 router.delete('/:roomId/leave', protect, leaveRoom)

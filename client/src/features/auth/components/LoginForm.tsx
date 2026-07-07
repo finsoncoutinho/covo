@@ -19,7 +19,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { loginSchema, type LoginInput } from '../schemas/loginSchema'
 import { useLogin } from '../hooks/useLogin'
@@ -35,6 +35,8 @@ export default function LoginForm({
   ...props
 }: LoginFormProps) {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const callbackUrl = searchParams.get('callbackUrl')
   const { login, isPending, error: loginError } = useLogin()
   const errorMessage = getErrorMessage(loginError)
   const {
@@ -52,7 +54,7 @@ export default function LoginForm({
   const onSubmit = async (data: LoginInput) => {
     try {
       await login(data)
-      router.push('/dashboard')
+      router.push(callbackUrl || '/dashboard')
     } catch (err) {
       // Error is handled by the hook/mutation
     }

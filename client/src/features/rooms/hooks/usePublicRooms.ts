@@ -1,21 +1,6 @@
 import { api } from '@/lib/api'
 import { useQuery } from '@tanstack/react-query'
-
-export interface PublicRoom {
-  id: string
-  name: string
-  description: string
-  visibility: string
-  memberCount: number
-  imageUrl?: string
-}
-
-export interface Pagination {
-  page: number
-  limit: number
-  total: number
-  totalPages: number
-}
+import type { PublicRoom, Pagination } from '@/types'
 
 export interface PublicRoomsResponse {
   rooms: PublicRoom[]

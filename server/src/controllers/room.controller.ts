@@ -27,6 +27,7 @@ import {
   kickMemberService,
   regenerateInviteCodeService,
   getRoomMembersService,
+  getRoomByInviteCodeService,
 } from '../services/room.service.js'
 
 export const createRoom: RequestHandler = asyncHandler(async (req, res) => {
@@ -224,4 +225,17 @@ export const getRoomMembers: RequestHandler<{
   return res
     .status(200)
     .json(new ApiResponse(200, members, 'Room members fetched successfully'))
+})
+
+export const getRoomByInviteCode: RequestHandler<{
+  inviteCode: string
+}> = asyncHandler(async (req, res) => {
+  const { inviteCode } = req.params
+  const userId = req.user?.userId
+
+  const room = await getRoomByInviteCodeService(inviteCode, userId)
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, room, 'Room details fetched successfully'))
 })

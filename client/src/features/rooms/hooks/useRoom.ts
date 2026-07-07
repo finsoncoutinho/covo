@@ -1,6 +1,6 @@
 import { api } from '@/lib/api'
 import { useQuery } from '@tanstack/react-query'
-import { Room } from './useMyRooms'
+import type { Room } from '@/types'
 
 export const useRoom = (roomId: string) => {
   return useQuery({

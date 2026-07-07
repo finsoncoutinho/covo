@@ -29,7 +29,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { toast } from 'sonner'
-import { Room } from '../hooks/useMyRooms'
+import type { Room, PublicRoom } from '@/types'
 import { RoomModal } from './RoomModal'
 import { ConfirmationModal } from '@/components/ConfirmationModal'
 import Image from 'next/image'
@@ -38,7 +38,7 @@ import { useJoinPublicRoom } from '../hooks/useJoinPublicRoom'
 import { useLeaveRoom } from '../hooks/useLeaveRoom'
 
 interface RoomCardProps {
-  room: Room
+  room: Room | PublicRoom
   showJoinButton?: boolean
   isMember?: boolean
 }
@@ -49,8 +49,8 @@ export function RoomCard({ room, showJoinButton = false, isMember = false }: Roo
   const { mutate: leaveRoom, isPending: isLeaving } = useLeaveRoom()
   const [menuOpen, setMenuOpen] = useState(false)
 
-  const isOwner = room?.currentUserRole === 'OWNER'
-  const isUserMember = isMember || !!room?.currentUserRole
+  const isOwner = 'currentUserRole' in room && room?.currentUserRole === 'OWNER'
+  const isUserMember = isMember || ('currentUserRole' in room && !!room?.currentUserRole)
 
   const handleJoin = (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -79,7 +79,12 @@ export function RoomCard({ room, showJoinButton = false, isMember = false }: Roo
             className='object-cover'
           />
         ) : (
-          <ImageIcon className='h-10 w-10 text-muted-foreground/30' />
+          <Image
+            src='/dummy-room-cover.jpg'
+            alt='Dummy cover image'
+            fill
+            className='object-cover opacity-50'
+          />
         )}
         {isUserMember && (
           <div className='absolute top-2 right-2' onClick={(e) => e.stopPropagation()}>
@@ -95,7 +100,7 @@ export function RoomCard({ room, showJoinButton = false, isMember = false }: Roo
               </DropdownMenuTrigger>
               <DropdownMenuContent align='end'>
                 {isOwner ? (
-                  <RoomModal roomToEdit={room} onSuccess={() => setMenuOpen(false)}>
+                  <RoomModal roomToEdit={room as Room} onSuccess={() => setMenuOpen(false)}>
                     <DropdownMenuItem
                       onSelect={(e) => {
                         e.preventDefault()
@@ -112,19 +117,16 @@ export function RoomCard({ room, showJoinButton = false, isMember = false }: Roo
                     confirmText='Leave'
                     confirmVariant='destructive'
                     isPending={isLeaving}
-                    onConfirm={() => {
-                      return new Promise<void>((resolve, reject) => {
-                        leaveRoom(room.id, {
-                          onSuccess: () => {
-                            toast.success(`Left ${room.name || 'room'}`)
-                            setMenuOpen(false)
-                            resolve()
-                          },
-                          onError: (error) => {
-                            toast.error(error.message || 'Failed to leave room')
-                            reject(error)
-                          },
-                        })
+                    onConfirm={(closeModal) => {
+                      leaveRoom(room.id, {
+                        onSuccess: () => {
+                          toast.success(`Left ${room.name || 'room'}`)
+                          setMenuOpen(false)
+                          closeModal()
+                        },
+                        onError: (error) => {
+                          toast.error(error.message || 'Failed to leave room')
+                        },
                       })
                     }}
                   >
