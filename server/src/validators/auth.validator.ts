@@ -2,7 +2,8 @@ import { z } from 'zod'
 import { passwordSchema } from './passwordSchema.js'
 
 export const signupSchema = z.object({
-  email: z.email('Invalid email address'),
+  name: z.string({ message: 'Name is required' }).min(2, 'Name must be at least 2 characters').trim(),
+  email: z.string().email('Invalid email address'),
 
   password: z
     .string()

@@ -11,7 +11,7 @@ import crypto from 'crypto'
 import { sendResetPasswordEmail } from '../utils/emails/sendResetPasswordEmail.js'
 
 export const signupService = async (data: SignupInput) => {
-  const { email, password } = data
+  const { name, email, password } = data
 
   const existingUser = await prisma.user.findFirst({
     where: {
@@ -27,6 +27,7 @@ export const signupService = async (data: SignupInput) => {
 
   const user = await prisma.user.create({
     data: {
+      name,
       email,
       password: hashedPassword,
     },

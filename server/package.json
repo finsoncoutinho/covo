@@ -21,6 +21,7 @@
     "express": "^5.2.1",
     "express-rate-limit": "^8.5.2",
     "jsonwebtoken": "^9.0.3",
+    "nanoid": "^5.1.11",
     "pg": "^8.21.0",
     "resend": "^6.12.4",
     "socket.io": "^4.8.3",

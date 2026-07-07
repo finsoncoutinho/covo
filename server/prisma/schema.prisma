@@ -7,13 +7,64 @@ datasource db {
   provider = "postgresql"
 }
 
+enum RoomVisibility {
+  PUBLIC
+  PRIVATE
+}
+
+enum RoomRole {
+  OWNER
+  MODERATOR
+  MEMBER
+}
+
 model User {
-  id                  String    @id @default(cuid())
-  email               String    @unique
-  password            String
+  id       String @id @default(cuid())
+  name     String
+  email    String @unique
+  password String
+
   refreshToken        String?
   resetPasswordToken  String?
   resetPasswordExpiry DateTime?
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
+
+  roomMemberships RoomMember[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model RoomMember {
+  id String @id @default(cuid())
+
+  roomId String
+  userId String
+
+  role RoomRole @default(MEMBER)
+
+  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  joinedAt DateTime @default(now())
+
+  @@unique([roomId, userId])
+  @@index([roomId])
+  @@index([userId])
+  @@index([role])
+}
+
+model Room {
+  id String @id @default(cuid())
+
+  name        String
+  description String?
+
+  visibility RoomVisibility @default(PUBLIC)
+
+  inviteCode String? @unique
+
+  memberships RoomMember[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
