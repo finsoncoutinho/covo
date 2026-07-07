@@ -10,7 +10,7 @@ export default function Home() {
       <div className="relative z-10 text-center">
         <h1 
           id="welcome-title" 
-          className="bg-gradient-to-r from-indigo-600 via-violet-600 to-cyan-500 bg-clip-text text-5xl font-extrabold tracking-tight text-transparent sm:text-7xl dark:from-indigo-400 dark:via-violet-400 dark:to-cyan-300 transition-all duration-300 hover:scale-105"
+          className="page-title bg-gradient-to-r from-indigo-600 via-violet-600 to-cyan-500 bg-clip-text text-5xl font-extrabold tracking-tight text-transparent sm:text-7xl dark:from-indigo-400 dark:via-violet-400 dark:to-cyan-300 transition-all duration-300 hover:scale-105"
         >
           Welcome to Covo
         </h1>

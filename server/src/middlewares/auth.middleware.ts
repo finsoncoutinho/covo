@@ -31,3 +31,28 @@ export const protect: RequestHandler = asyncHandler(
     }
   },
 )
+
+export const optionalAuth: RequestHandler = asyncHandler(
+  async (req: Request, _res: Response, next: NextFunction) => {
+    const accessToken = req.cookies?.accessToken
+
+    if (accessToken) {
+      try {
+        const decoded = jwt.verify(
+          accessToken,
+          process.env.ACCESS_TOKEN_SECRET!,
+        ) as {
+          userId: string
+        }
+
+        req.user = {
+          userId: decoded.userId,
+        }
+      } catch (error) {
+        // Invalid or expired token, proceed as unauthenticated
+      }
+    }
+
+    next()
+  },
+)
