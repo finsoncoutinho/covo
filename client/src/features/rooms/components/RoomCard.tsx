@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import {
   Globe,
   Users,
@@ -161,21 +162,21 @@ export function RoomCard({ room, showJoinButton = false, isMember = false }: Roo
       </CardHeader>
 
       <CardContent>
-        <div className='flex items-center gap-4 text-sm text-muted-foreground font-medium'>
-          <div className='flex items-center gap-1.5'>
+        <div className='flex items-center gap-2'>
+          <Badge variant='secondary' className='gap-1.5 text-xs font-medium'>
             {room?.visibility === 'PRIVATE' ? (
-              <Lock className='h-4 w-4' />
+              <Lock className='h-3 w-3' />
             ) : (
-              <Globe className='h-4 w-4' />
+              <Globe className='h-3 w-3' />
             )}
             <span className='capitalize'>
               {room?.visibility?.toLowerCase() || 'Public'}
             </span>
-          </div>
-          <div className='flex items-center gap-1.5'>
-            <Users className='h-4 w-4' />
-            <span>{room?.memberCount || 0} Members</span>
-          </div>
+          </Badge>
+          <Badge variant='secondary' className='gap-1.5 text-xs font-medium'>
+            <Users className='h-3 w-3' />
+            <span>{room?.memberCount || 0}</span>
+          </Badge>
         </div>
       </CardContent>
 

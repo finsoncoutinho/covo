@@ -65,7 +65,7 @@ const Navbar = () => {
   const isDark = mounted ? resolvedTheme === 'dark' : false
 
   return (
-    <header className='h-16 flex items-center justify-between px-8 bg-background z-10 sticky top-0'>
+    <header className='h-16 flex items-center justify-between pl-16 pr-8 md:px-8 bg-background z-10 sticky top-0'>
       <h2 className='page-title text-[22px] font-semibold text-foreground'>
         {getPageTitle()}
       </h2>

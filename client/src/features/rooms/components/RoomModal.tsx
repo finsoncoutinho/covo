@@ -28,7 +28,11 @@ interface RoomModalProps {
   onSuccess?: () => void
 }
 
-export function RoomModal({ children, roomToEdit, onSuccess: onSuccessCallback }: RoomModalProps) {
+export function RoomModal({
+  children,
+  roomToEdit,
+  onSuccess: onSuccessCallback,
+}: RoomModalProps) {
   const [open, setOpen] = useState(false)
   const isEdit = !!roomToEdit
 
@@ -61,7 +65,7 @@ export function RoomModal({ children, roomToEdit, onSuccess: onSuccessCallback }
 
   const { mutate: createRoom, isPending: isCreating } = useCreateRoom()
   const { mutate: updateRoom, isPending: isUpdating } = useUpdateRoom()
-  
+
   const isPending = isCreating || isUpdating
 
   const onSubmit = (data: CreateRoomFormInput) => {
@@ -77,7 +81,7 @@ export function RoomModal({ children, roomToEdit, onSuccess: onSuccessCallback }
           onError: (error) => {
             toast.error(error.message || 'Failed to update room')
           },
-        }
+        },
       )
     } else {
       createRoom(
@@ -111,7 +115,7 @@ export function RoomModal({ children, roomToEdit, onSuccess: onSuccessCallback }
         {children || (
           <Button>
             <Plus className='w-4 h-4' />
-            Create Room
+            Create
           </Button>
         )}
       </DialogTrigger>
@@ -157,7 +161,13 @@ export function RoomModal({ children, roomToEdit, onSuccess: onSuccessCallback }
                 Cancel
               </Button>
               <Button type='submit' disabled={isPending}>
-                {isPending ? (isEdit ? 'Saving...' : 'Creating...') : (isEdit ? 'Save Changes' : 'Create Room')}
+                {isPending
+                  ? isEdit
+                    ? 'Saving...'
+                    : 'Creating...'
+                  : isEdit
+                    ? 'Save Changes'
+                    : 'Create Room'}
               </Button>
             </div>
           </form>

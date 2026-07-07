@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input'
 import { Copy, RefreshCw, AlertTriangle } from 'lucide-react'
 import { toast } from 'sonner'
 import { useRegenerateInviteCode } from '../hooks/useRegenerateInviteCode'
+import { ConfirmationModal } from '@/components/ConfirmationModal'
 
 interface InviteMembersModalProps {
   children?: ReactNode
@@ -43,19 +44,7 @@ export function InviteMembersModal({ children, inviteCode, roomId, isOwner }: In
     }
   }
 
-  const handleResetLink = () => {
-    regenerateInvite.mutate(roomId, {
-      onSuccess: (data) => {
-        toast.success('Invite link reset successfully')
-        if (data?.inviteCode && typeof window !== 'undefined') {
-          setInviteUrl(`${window.location.origin}/join/${data.inviteCode}`)
-        }
-      },
-      onError: (error: AxiosError<{ message: string }>) => {
-        toast.error(error?.response?.data?.message || 'Failed to reset invite link')
-      }
-    })
-  }
+
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -97,17 +86,37 @@ export function InviteMembersModal({ children, inviteCode, roomId, isOwner }: In
                 Reset Invite Link
               </h4>
               <p className='text-sm text-muted-foreground'>
-                Invalidates the current invite link and creates a new one.
+                Generate a new invite link for this room.
               </p>
-              <Button 
-                variant='destructive' 
-                onClick={handleResetLink}
-                disabled={regenerateInvite.isPending}
-                className='w-full'
+              <ConfirmationModal
+                title='Reset Invite Link?'
+                message='The current invite link will be permanently invalidated and anyone who has it will no longer be able to join. A new link will be generated in its place.'
+                confirmText='Reset Link'
+                confirmVariant='destructive'
+                isPending={regenerateInvite.isPending}
+                onConfirm={(closeModal) => {
+                  regenerateInvite.mutate(roomId, {
+                    onSuccess: (data) => {
+                      toast.success('Invite link reset successfully')
+                      if (data?.inviteCode && typeof window !== 'undefined') {
+                        setInviteUrl(`${window.location.origin}/join/${data.inviteCode}`)
+                      }
+                      closeModal()
+                    },
+                    onError: (error: AxiosError<{ message: string }>) => {
+                      toast.error(error?.response?.data?.message || 'Failed to reset invite link')
+                    }
+                  })
+                }}
               >
-                <RefreshCw className={`mr-2 h-4 w-4 ${regenerateInvite.isPending ? 'animate-spin' : ''}`} />
-                {regenerateInvite.isPending ? 'Resetting...' : 'Reset Link'}
-              </Button>
+                <Button
+                  variant='destructive'
+                  className='w-full'
+                >
+                  <RefreshCw className='mr-2 h-4 w-4' />
+                  Reset Link
+                </Button>
+              </ConfirmationModal>
             </div>
           </>
         )}

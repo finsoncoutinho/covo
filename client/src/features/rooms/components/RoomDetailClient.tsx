@@ -14,6 +14,7 @@ import {
   Trash2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { toast } from 'sonner'
 import { useLeaveRoom } from '../hooks/useLeaveRoom'
@@ -127,26 +128,26 @@ export function RoomDetailClient({ roomId }: { roomId: string }) {
             </p>
           )}
 
-          <div className='flex items-center gap-4 pt-2 text-sm text-muted-foreground font-medium'>
-            <div className='flex items-center gap-1.5'>
+          <div className='flex items-center gap-2 pt-2 flex-wrap'>
+            <Badge variant='secondary' className='gap-1.5'>
               {isPrivate ? (
-                <Lock className='h-4 w-4' />
+                <Lock className='h-3 w-3' />
               ) : (
-                <Globe className='h-4 w-4' />
+                <Globe className='h-3 w-3' />
               )}
               <span className='capitalize'>
                 {room.visibility.toLowerCase()}
               </span>
-            </div>
-            <div className='flex items-center gap-1.5'>
-              <Users className='h-4 w-4' />
+            </Badge>
+            <Badge variant='outline' className='gap-1.5'>
+              <Users className='h-3 w-3' />
               <span>{room.memberCount} Members</span>
-            </div>
+            </Badge>
             {isOwner && (
-              <div className='flex items-center gap-1.5 text-primary'>
-                <Crown className='h-4 w-4' />
+              <Badge variant='default' className='gap-1.5'>
+                <Crown className='h-3 w-3' />
                 <span>Owner</span>
-              </div>
+              </Badge>
             )}
           </div>
         </div>

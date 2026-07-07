@@ -1,6 +1,5 @@
 import { api } from '@/lib/api'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { AxiosError } from 'axios'
 import { toast } from 'sonner'
 
 export const useJoinPrivateRoom = () => {
@@ -15,10 +14,6 @@ export const useJoinPrivateRoom = () => {
       queryClient.invalidateQueries({ queryKey: ['my-rooms'] })
       queryClient.invalidateQueries({ queryKey: ['room'] })
       toast.success('Joined room successfully')
-    },
-    onError: (error: AxiosError<{ message: string }>) => {
-      const message = error?.response?.data?.message || 'Failed to join room'
-      toast.error(message)
     },
   })
 }
