@@ -2,6 +2,7 @@ import 'dotenv/config'
 import http from 'http'
 import { Server } from 'socket.io'
 import app from './app.js'
+import { registerSocketHandlers } from './sockets/index.js'
 
 const PORT = process.env.PORT || 5000
 
@@ -14,13 +15,7 @@ const io = new Server(server, {
   },
 })
 
-io.on('connection', (socket) => {
-  console.log(`⚡ User connected: ${socket.id}`)
-
-  socket.on('disconnect', () => {
-    console.log(`❌ User disconnected: ${socket.id}`)
-  })
-})
+registerSocketHandlers(io)
 
 server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`)
