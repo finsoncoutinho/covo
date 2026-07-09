@@ -16,7 +16,7 @@ export const useCurrentUser = () => {
   })
 
   return {
-    user: query.data,
+    user: query.data as User | undefined,
     isLoading: query.isLoading,
     error: query.error,
     refetch: query.refetch,

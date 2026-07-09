@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response, RequestHandler } from 'express'
 
 import jwt from 'jsonwebtoken'
 
+import type { AccessTokenPayload } from '../types/auth.types.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
 import { ApiError } from '../utils/ApiError.js'
 
@@ -17,9 +18,7 @@ export const protect: RequestHandler = asyncHandler(
       const decoded = jwt.verify(
         accessToken,
         process.env.ACCESS_TOKEN_SECRET!,
-      ) as {
-        userId: string
-      }
+      ) as AccessTokenPayload
 
       req.user = {
         userId: decoded.userId,
@@ -41,9 +40,7 @@ export const optionalAuth: RequestHandler = asyncHandler(
         const decoded = jwt.verify(
           accessToken,
           process.env.ACCESS_TOKEN_SECRET!,
-        ) as {
-          userId: string
-        }
+        ) as AccessTokenPayload
 
         req.user = {
           userId: decoded.userId,

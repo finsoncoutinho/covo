@@ -1,5 +1,7 @@
 import type { Request, Response, RequestHandler, CookieOptions } from 'express'
 import jwt from 'jsonwebtoken'
+
+import type { AccessTokenPayload } from '../types/auth.types.js'
 import {
   signupService,
   loginService,
@@ -82,7 +84,7 @@ export const logout: RequestHandler = asyncHandler(async (req, res) => {
         refreshToken,
         process.env.REFRESH_TOKEN_SECRET!,
         { ignoreExpiration: true },
-      ) as { userId: string }
+      ) as AccessTokenPayload
       await logoutService(decoded.userId)
     } catch (error) {
       console.error('Logout token verification failed')

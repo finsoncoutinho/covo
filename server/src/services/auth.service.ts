@@ -6,6 +6,7 @@ import { generateRefreshToken } from '../utils/generateRefreshToken.js'
 import { hashPassword } from '../utils/hashPassword.js'
 import type { LoginInput, SignupInput } from '../validators/auth.validator.js'
 import { hashToken } from '../utils/hashToken.js'
+import type { AccessTokenPayload } from '../types/auth.types.js'
 import jwt from 'jsonwebtoken'
 import crypto from 'crypto'
 import { sendResetPasswordEmail } from '../utils/emails/sendResetPasswordEmail.js'
@@ -121,12 +122,10 @@ export const getMeService = async (userId: string) => {
 }
 
 export const refreshAccessTokenService = async (refreshToken: string) => {
-  let decoded: { userId: string }
+  let decoded: AccessTokenPayload
 
   try {
-    decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET!) as {
-      userId: string
-    }
+    decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET!) as AccessTokenPayload
   } catch (error) {
     throw new ApiError(401, 'Invalid or expired refresh token')
   }
